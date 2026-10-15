@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User - Student Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      color: #1e293b;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4f46e5;
+      margin-bottom: 5px;
+    }
+
+    .sub {
+      text-align: center;
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    .box {
+      max-width: 600px;
+      margin: 0 auto 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .box h2 {
+      font-size: 16px;
+      color: #4f46e5;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed #eee;
+      font-size: 14px;
+    }
+    .row:last-child { border-bottom: none; }
+    .row span:first-child { color: #64748b; }
+    .row span:last-child { font-weight: 600; }
+
+    .search {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .search input {
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 200px;
+    }
+    .search button {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+    .search button:hover { background: #4338ca; }
+
+    .att-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .att-table th, .att-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .att-table th { background: #f0f0f0; }
+
+    .p { color: #10b981; font-weight: bold; }
+    .a { color: #ef4444; font-weight: bold; }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #4f46e5;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back:hover { text-decoration: underline; }
+
+    .msg { text-align: center; color: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <h1>👨‍🎓 User Portal</h1>
+  <p class="sub">Enter your Student ID to view your details</p>
+
+  <!-- Search box -->
+  <div class="search">
+    <input type="text" id="sid" placeholder="e.g. 101" />
+    <button onclick="findStudent()">Search</button>
+  </div>
+
+  <!-- Student details -->
+  <div class="box" id="detailsBox" style="display:none;">
+    <h2>Student Details</h2>
+    <div class="row"><span>Name</span><span id="dName">-</span></div>
+    <div class="row"><span>Student ID</span><span id="dId">-</span></div>
+    <div class="row"><span>Course</span><span id="dCourse">-</span></div>
+    <div class="row"><span>Year</span><span id="dYear">-</span></div>
+    <div class="row"><span>Marks</span><span id="dMarks">-</span></div>
+  </div>
+
+  <!-- Attendance -->
+  <div class="box" id="attBox" style="display:none;">
+    <h2>Attendance Record</h2>
+    <table class="att-table">
+      <thead>
+        <tr><th>Date</th><th>Status</th></tr>
+      </thead>
+      <tbody id="attList"></tbody>
+    </table>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <a href="index.html" class="back">← Back to Home</a>
+
+  <script>
+    // ---- Student data ----
+    let students = [
+      {
+        id: "101", name: "Aarav Sharma", course: "Computer Science",
+        year: "3rd Year", marks: 85,
+        attendance: [
+          { date: "2026-10-10", status: "Present" },
+          { date: "2026-10-11", status: "Absent"  },
+          { date: "2026-10-12", status: "Present" },
+          { date: "2026-10-13", status: "Present" }
+        ]
+      },
+      {
+        id: "102", name: "Priya Nair", course: "Information Tech",
+        year: "2nd Year", marks: 92,
+        attendance: [
+          { date: "2026-10-10", status: "Present" },
+          { date: "2026-10-11", status: "Present" },
+          { date: "2026-10-12", status: "Absent"  },
+          { date: "2026-10-13", status: "Present" }
+        ]
+      },
+      {
+        id: "103", name: "Rohan Verma", course: "Mechanical Engg",
+        year: "4th Year", marks: 74,
+        attendance: [
+          { date: "2026-10-10", status: "Absent"  },
+          { date: "2026-10-11", status: "Present" },
+          { date: "2026-10-12", status: "Absent"  },
+          { date: "2026-10-13", status: "Present" }
+        ]
+      }
+    ];
+
+    // ---- Find student by ID ----
+    function findStudent() {
+      const id = document.getElementById("sid").value.trim();
+      const msg = document.getElementById("msg");
+      const dBox = document.getElementById("detailsBox");
+      const aBox = document.getElementById("attBox");
+
+      // reset
+      msg.textContent = "";
+      dBox.style.display = "none";
+      aBox.style.display = "none";
+
+      if (id === "") {
+        msg.textContent = "Please enter a Student ID.";
+        return;
+      }
+
+      const s = students.find(function (st) { return st.id === id; });
+
+      if (!s) {
+        msg.textContent = "No student found with ID: " + id;
+        return;
+      }
+
+      // Fill details
+      document.getElementById("dName").textContent   = s.name;
+      document.getElementById("dId").textContent     = s.id;
+      document.getElementById("dCourse").textContent = s.course;
+      document.getElementById("dYear").textContent   = s.year;
+      document.getElementById("dMarks").textContent  = s.marks;
+
+      // Fill attendance
+      let rows = "";
+      s.attendance.forEach(function (a) {
+        const cls = a.status === "Present" ? "p" : "a";
+        rows += `<tr><td>${a.date}</td><td class="${cls}">${a.status}</td></tr>`;
+      });
+      document.getElementById("attList").innerHTML = rows;
+
+      dBox.style.display = "block";
+      aBox.style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
